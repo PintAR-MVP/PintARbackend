@@ -1,5 +1,3 @@
-# backend"# PintARbackend" 
-
 # Deployment instructions
 
 ## Install third party software
@@ -12,10 +10,10 @@
 1. Import your domain into AWS Route53. Step-by-step instructions for that can be found at https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/migrate-dns-domain-in-use.html. (NOTE: The domain name will be referred to as “DOMAIN”)
 2. Look up the hosted zone id of the domain you just imported. (NOTE: The hosted zone id will be referred to as “HOSTED_ZONE_ID”)
 3. Create a IAM user for the deployment. For the AWS credential type choose “Access key -Programmatic access”. (NOTE: The access key id and secret access key will be referred to as “ACCESS_KEY_ID” and “SECRET_ACCESS_KEY”)
-4. Create and attach a IAM policy with the required permissions to the newly created user. A policy document containing the required permissions can be found in APPENDIX 1 and step-by-step instructions for the creation and attachment of this policy can be found at https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-and-attach-iam-policy.html.
+4. Create and attach a IAM policy with the required permissions to the newly created user. A policy document containing the required permissions can be found in the artifacts directory and step-by-step instructions for the creation and attachment of this policy can be found at https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-and-attach-iam-policy.html.
 
 ## Download the code
-1. Download the source code from … and extract it to an empty directory (NOTE: This directory will be referred to as “PROJECT_DIR”)
+1. Download the source code and extract it to an empty directory (NOTE: This directory will be referred to as “PROJECT_DIR”)
 
 ## Deploy the API
 1. Choose a subdomain under which you would like to make the API accessible. (Note: This subdomain will be referred to as “API_SUBDOMAIN”)
