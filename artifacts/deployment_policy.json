@@ -1,0 +1,59 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+      {
+          "Effect": "Allow",
+          "Action": "kinesis:*",
+          "Resource": "*"
+      },
+      {
+          "Sid": "VisualEditor0",
+          "Effect": "Allow",
+          "Action": [
+              "ec2:DescribeAddresses",
+              "ec2:DescribeInstances",
+              "ec2:DescribeCoipPools",
+              "logs:*",
+              "dynamodb:*",
+              "sqs:*",
+              "ec2:DescribeInternetGateways",
+              "cloudfront:*",
+              "ec2:DescribeNetworkInterfaces",
+              "ec2:DescribeAccountAttributes",
+              "ec2:DescribeRouteTables",
+              "cognito-idp:DescribeUserPoolClient",
+              "cognito-identity:*",
+              "apigateway:*",
+              "s3:*",
+              "ec2:GetCoipPoolUsage",
+              "ec2:DescribeVpcPeeringConnections",
+              "cloudformation:*",
+              "elasticloadbalancing:*",
+              "ec2:DescribeClassicLinkInstances",
+              "ec2:DescribeSecurityGroups",
+              "ec2:DescribeVpcClassicLink",
+              "iam:*",
+              "es:*",
+              "ec2:DescribeVpcs",
+              "route53:*",
+              "lambda:*",
+              "ec2:*",
+              "cognito-idp:*",
+              "ec2:DescribeSubnets",
+              "acm:*"
+          ],
+          "Resource": "*"
+      },
+      {
+          "Sid": "VisualEditor1",
+          "Effect": "Allow",
+          "Action": "iam:CreateServiceLinkedRole",
+          "Resource": "*",
+          "Condition": {
+              "StringEquals": {
+                  "iam:AWSServiceName": "elasticloadbalancing.amazonaws.com"
+              }
+          }
+      }
+  ]
+}

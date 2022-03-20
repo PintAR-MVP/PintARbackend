@@ -1,0 +1,83 @@
+{
+  "name": "products-ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@aws-amplify/ui-components": "^1.9.6",
+    "@aws-amplify/ui-vue": "^2.0.5",
+    "@chenfengyuan/vue-countdown": "^2.0.0-rc",
+    "@tailwindcss/forms": "^0.4.0",
+    "@tailwindcss/postcss7-compat": "^2.2.17",
+    "@toast-ui/vue-image-editor": "^3.15.2",
+    "autoprefixer": "^9",
+    "aws-amplify": "^4.3.11",
+    "axios": "^0.24.0",
+    "core-js": "^3.6.5",
+    "cssnano": "^5.0.14",
+    "fast-average-color": "^7.0.1",
+    "form-json": "^2.1.0",
+    "postcss": "^7",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17",
+    "tui-color-picker": "^2.2.7",
+    "tui-image-editor": "^3.15.2",
+    "vue": "^2.6.11",
+    "vue-annotator": "^0.13.2",
+    "vue-awesome-countdown": "^1.1.4",
+    "vue-countdown": "^1.0.4",
+    "vue-file-selector": "^0.6.0",
+    "vue-konva": "^2.1.7",
+    "vue-router": "^3.2.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "^4.5.15",
+    "@vue/cli-plugin-router": "^4.5.15",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/eslint-config-airbnb": "^5.0.2",
+    "babel-eslint": "^10.1.0",
+    "chalk": "^2.4.1",
+    "eslint": "^6.7.2",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "serverless-cloudfront-invalidate": "^1.11.0",
+    "serverless-export-env": "^2.0.0",
+    "serverless-plugin-scripts": "^1.0.2",
+    "serverless-s3-deploy": "^0.10.1",
+    "vue-cli-plugin-tailwind": "~2.2.18",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended",
+      "@vue/airbnb"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {
+      "max-len": [
+        2,
+        {
+          "code": 512,
+          "tabWidth": 2,
+          "ignoreUrls": true
+        }
+      ]
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

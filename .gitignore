@@ -1,0 +1,5 @@
+services/ui/node_modules
+services/ui/dist
+services/ui/.serverless
+services/api/.serverless
+services/api/node_modules

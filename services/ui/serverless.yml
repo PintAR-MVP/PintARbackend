@@ -1,0 +1,154 @@
+# org: pintar
+app: backend
+service: ui
+
+provider:
+  name: aws
+  region: eu-central-1
+  stage: ${opt:stage}
+  runtime: python3.8
+  stackName: pintar-ui-${self:provider.stage}
+  environment:
+    VUE_APP_REGION: ${self:provider.region}
+    VUE_APP_COGNITO_USER_POOL: !ImportValue pintar-api-cognito-user-pool-${self:provider.stage}
+    VUE_APP_COGNITO_USER_POOL_CLIENT: !ImportValue pintar-api-cognito-user-pool-client-${self:provider.stage}
+    VUE_APP_API_DOMAIN_NAME: !ImportValue pintar-api-domain-name-${self:provider.stage}
+
+plugins:
+  - serverless-export-env
+  - serverless-plugin-scripts
+  - serverless-s3-deploy
+  - serverless-cloudfront-invalidate
+
+custom:
+  export-env:
+    overwrite: true
+  scripts:
+    hooks:
+      "after:deploy:finalize": >-
+        sls export-env --stage ${self:provider.stage} && 
+        npm run build && 
+        sls s3deploy --stage ${self:provider.stage} && 
+        sls cloudfrontInvalidate --stage ${self:provider.stage}
+  assets:
+    targets:
+      - bucket: !Ref DeploymentBucket
+        empty: true
+        files:
+          - source: dist/
+            globs: "**"
+            headers:
+              CacheControl: max-age=86400
+  cloudfrontInvalidate:
+    - distributionIdKey: CloudFrontId
+      autoInvalidate: false
+      items:
+        - "/*"
+        
+  domainNames:
+    prod: ui.pint-ar.de
+  certificateArns: 
+    prod: arn:aws:acm:us-east-1:235501516910:certificate/e1703dca-38ea-40a8-bbc9-118c11bda693
+  
+  domainName: "${self:custom.domainNames.${self:provider.stage}}"
+  certificateArn: "${self:custom.certificateArns.${self:provider.stage}}"
+  hostedZoneId: Z06771035RYK5PGM23RO
+
+resources:
+  Resources:
+    DeploymentBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: pintar-ui-deployment-${self:provider.stage}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+    DeploymentBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref DeploymentBucket
+        PolicyDocument:
+          Statement:
+            - Action: s3:GetObject
+              Effect: Allow
+              Principal:
+                CanonicalUser: !GetAtt [DefaultOriginAccessIdentity, S3CanonicalUserId]
+              Resource: !Join ["", [!GetAtt [DeploymentBucket, Arn], "/*"]]
+    DefaultCachePolicy:
+      Type: AWS::CloudFront::CachePolicy
+      Properties:
+        CachePolicyConfig:
+          Name: pintar-ui-default-${self:provider.stage}
+          DefaultTTL: 3600
+          MinTTL: 0
+          MaxTTL: 86400
+          ParametersInCacheKeyAndForwardedToOrigin:
+            EnableAcceptEncodingBrotli: true
+            EnableAcceptEncodingGzip: true
+            CookiesConfig:
+              CookieBehavior: none
+            HeadersConfig:
+              HeaderBehavior: none
+            QueryStringsConfig:
+              QueryStringBehavior: none
+    DefaultOriginRequestPolicy:
+      Type: AWS::CloudFront::OriginRequestPolicy
+      Properties:
+        OriginRequestPolicyConfig:
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: none
+          Name: pintar-ui-default-${self:provider.stage}     
+    DefaultOriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: "Allow cloudfront access to ui services."
+    CloudFront:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Aliases:
+            - ${self:custom.domainName}
+          HttpVersion: http2
+          PriceClass: PriceClass_All
+          ViewerCertificate:
+            AcmCertificateArn: ${self:custom.certificateArn}
+            MinimumProtocolVersion: TLSv1
+            SslSupportMethod: sni-only
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ErrorCachingMinTTL: 31536000 
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+          DefaultCacheBehavior:
+            AllowedMethods: [ GET, HEAD ]
+            CachedMethods: [ GET, HEAD ]
+            CachePolicyId: !Ref DefaultCachePolicy
+            Compress: true
+            OriginRequestPolicyId: !Ref DefaultOriginRequestPolicy
+            TargetOriginId: default
+            ViewerProtocolPolicy: redirect-to-https
+          Origins:
+            - Id: default
+              DomainName: !GetAtt [DeploymentBucket, DomainName]
+              S3OriginConfig:
+                OriginAccessIdentity: !Join ["", ["origin-access-identity/cloudfront/", !Ref DefaultOriginAccessIdentity]]
+    CloudFrontDomainNameRecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: ${self:custom.hostedZoneId}
+        Name: ${self:custom.domainName}
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt [CloudFront, DomainName]
+          HostedZoneId: Z2FDTNDATAQYW2
+  Outputs:
+    CloudFrontId:
+      Value: !Ref CloudFront

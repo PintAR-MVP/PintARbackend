@@ -1,0 +1,17 @@
+{
+  "name": "products-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "dependencies": {
+    "serverless-export-env": "^2.0.0"
+  },
+  "devDependencies": {
+    "chalk": "^2.4.1",
+    "serverless-certificate-creator": "^1.6.0",
+    "serverless-domain-manager": "^5.2.0",
+    "serverless-python-requirements": "^5.2.0",
+    "serverless-wsgi": "^3.0.0"
+  }
+}

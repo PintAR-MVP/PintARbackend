@@ -1,0 +1,816 @@
+{
+    "swagger": "2.0",
+    "basePath": "/",
+    "paths": {
+        "/products": {
+            "post": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/ProductsPostResponse"
+                        }
+                    }
+                },
+                "summary": "Create a new product",
+                "operationId": "post_products_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/ProductsPostRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Products"
+                ]
+            }
+        },
+        "/products/{product_id}": {
+            "parameters": [
+                {
+                    "description": "ID of the product",
+                    "name": "product_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/ProductGetResponse"
+                        }
+                    }
+                },
+                "summary": "Get a product",
+                "operationId": "get_product_resource",
+                "tags": [
+                    "Products"
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Delete a product",
+                "operationId": "delete_product_resource",
+                "tags": [
+                    "Products"
+                ]
+            },
+            "put": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/ProductPutResponse"
+                        }
+                    }
+                },
+                "summary": "Update a product",
+                "operationId": "put_product_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/ProductPutRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Products"
+                ]
+            }
+        },
+        "/products/{product_id}/images": {
+            "parameters": [
+                {
+                    "description": "ID of the product",
+                    "name": "product_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "post": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Attach images to a product",
+                "operationId": "post_product_images_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/ProductImagesPostRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Products"
+                ]
+            }
+        },
+        "/products/{product_id}/images/{image_id}": {
+            "parameters": [
+                {
+                    "description": "ID of the product",
+                    "name": "product_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                },
+                {
+                    "description": "ID of the attached image",
+                    "name": "image_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "delete": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Image or product not found"
+                    },
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Remove attached images from a product",
+                "operationId": "delete_product_image_resource",
+                "tags": [
+                    "Products"
+                ]
+            }
+        },
+        "/search": {
+            "post": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/SearchResponse"
+                        }
+                    }
+                },
+                "summary": "Search for products",
+                "operationId": "post_search_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SearchRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Search"
+                ]
+            }
+        },
+        "/submit/product": {
+            "post": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Submit a product",
+                "operationId": "post_submit_product_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SubmitProductPostRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Submit"
+                ]
+            }
+        },
+        "/submit/product-image": {
+            "post": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/SubmitProductImagesPostResponse"
+                        }
+                    }
+                },
+                "summary": "Submit product images",
+                "operationId": "post_submit_product_images_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SubmitProductImagesPostRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Submit"
+                ]
+            }
+        },
+        "/submit/validate": {
+            "get": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "204": {
+                        "description": "No pending validation task"
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/SubmitValidationGetResponse"
+                        }
+                    }
+                },
+                "summary": "Request a validation task",
+                "operationId": "get_submit_validation_resource",
+                "tags": [
+                    "Submit"
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "400": {
+                        "description": "Validation error"
+                    },
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Mark the validation task as done",
+                "operationId": "delete_submit_validation_resource",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SubmitValidationDeleteRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Submit"
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "PintAR API",
+        "version": "1.0",
+        "description": "API for PintAR IOS app and the PintAR import tool."
+    },
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "tags": [
+        {
+            "name": "Products",
+            "description": "Resources for admins to perform CRUD operations on products."
+        },
+        {
+            "name": "Search",
+            "description": "Resources for product search from users."
+        },
+        {
+            "name": "Submit",
+            "description": "Resources for product submissions from users and the processing of these submissions from admins."
+        }
+    ],
+    "definitions": {
+        "ProductsPostRequest": {
+            "required": [
+                "category",
+                "color",
+                "images",
+                "label_text",
+                "name",
+                "shape"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name."
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Category of the product."
+                },
+                "label_text": {
+                    "type": "string",
+                    "description": "Text visible on the product label."
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of a previously submitted image."
+                    }
+                },
+                "shape": {
+                    "type": "string",
+                    "description": "Outline of the product as a polygon in its WKT representation."
+                },
+                "color": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "ProductsPostResponse": {
+            "required": [
+                "product"
+            ],
+            "properties": {
+                "product": {
+                    "$ref": "#/definitions/Product"
+                }
+            },
+            "type": "object"
+        },
+        "Product": {
+            "required": [
+                "category",
+                "color",
+                "creation_date",
+                "id",
+                "images",
+                "label_text",
+                "name",
+                "shape"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique ID that can be used to later reference this product."
+                },
+                "creation_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date when the product was added to the database."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the product."
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Category of the product."
+                },
+                "label_text": {
+                    "type": "string",
+                    "description": "Text visible on the product label."
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Unique ID of a image attached to this product."
+                    }
+                },
+                "shape": {
+                    "type": "string",
+                    "description": "Outline of the product as a polygon in its WKT representation."
+                },
+                "color": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "ProductPutRequest": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "New name of the product."
+                },
+                "category": {
+                    "type": "string",
+                    "description": "New category of the product."
+                },
+                "label_text": {
+                    "type": "string",
+                    "description": "New text that is visible on the product label."
+                },
+                "shape": {
+                    "type": "string",
+                    "description": "New outline of the product as a polygon in its WKT representation."
+                },
+                "color": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "ProductGetResponse": {
+            "required": [
+                "product"
+            ],
+            "properties": {
+                "product": {
+                    "$ref": "#/definitions/Product"
+                }
+            },
+            "type": "object"
+        },
+        "ProductPutResponse": {
+            "required": [
+                "product"
+            ],
+            "properties": {
+                "product": {
+                    "$ref": "#/definitions/Product"
+                }
+            },
+            "type": "object"
+        },
+        "ProductImagesPostRequest": {
+            "required": [
+                "images"
+            ],
+            "properties": {
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of a previously submitted image."
+                    }
+                }
+            },
+            "type": "object"
+        },
+        "SearchRequest": {
+            "required": [
+                "text_filter"
+            ],
+            "properties": {
+                "text_filter": {
+                    "description": "Primary filter that is tested against all products in the Database.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/TextFilterConfig"
+                        }
+                    ]
+                },
+                "color_filter": {
+                    "description": "Filter that is evaluated on the result of the primary filter.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ColorFilterConfig"
+                        }
+                    ]
+                },
+                "shape_filter": {
+                    "description": "Filter that is evaluated on the result of the primary filter.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ShapeFilterConfig"
+                        }
+                    ]
+                },
+                "category_filter": {
+                    "description": "Filter that is evaluated on the result of the primary filter.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/CategoryFilterConfig"
+                        }
+                    ]
+                },
+                "score": {
+                    "type": "number",
+                    "description": "Minimum score required to include a match in the response.",
+                    "default": 0.0
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of matches to include in the response.",
+                    "default": 10
+                }
+            },
+            "type": "object"
+        },
+        "TextFilterConfig": {
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "Text detected inside the image region the product was detected in."
+                }
+            },
+            "type": "object"
+        },
+        "ColorFilterConfig": {
+            "required": [
+                "color"
+            ],
+            "properties": {
+                "color": {
+                    "type": "string",
+                    "description": "Average color of the image region the product was detected in."
+                }
+            },
+            "type": "object"
+        },
+        "ShapeFilterConfig": {
+            "properties": {
+                "wkt": {
+                    "type": "string",
+                    "description": "Detected product outline as a polygon in WKT representation."
+                },
+                "shape": {
+                    "type": "array",
+                    "description": "Detected product outline as an array of x, y coordinates.",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                }
+            },
+            "type": "object"
+        },
+        "CategoryFilterConfig": {
+            "required": [
+                "category"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "description": "Prediction of the product category."
+                }
+            },
+            "type": "object"
+        },
+        "SearchResponse": {
+            "required": [
+                "matches"
+            ],
+            "properties": {
+                "matches": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Match"
+                    }
+                }
+            },
+            "type": "object"
+        },
+        "Match": {
+            "required": [
+                "id",
+                "name",
+                "score"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Id of the matching product."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the matching product."
+                },
+                "score": {
+                    "type": "number",
+                    "description": "Score of how well the product matches."
+                }
+            },
+            "type": "object"
+        },
+        "SubmitProductPostRequest": {
+            "required": [
+                "images"
+            ],
+            "properties": {
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of a previously submitted image."
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Suggestion for the product name."
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Suggestion for the product color."
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Suggestion for the product category."
+                },
+                "shape": {
+                    "type": "string",
+                    "description": "Suggestion for the product outline as a polygon in WKT representation."
+                },
+                "label_text": {
+                    "type": "string",
+                    "description": "Suggestion for the product label text."
+                }
+            },
+            "type": "object"
+        },
+        "SubmitProductImagesPostRequest": {
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "description": "Number of images to submit.",
+                    "minimum": 0
+                }
+            },
+            "type": "object"
+        },
+        "SubmitProductImagesPostResponse": {
+            "required": [
+                "images"
+            ],
+            "properties": {
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SubmitImage"
+                    }
+                }
+            },
+            "type": "object"
+        },
+        "SubmitImage": {
+            "required": [
+                "key",
+                "upload_url"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "description": "ID to later reference this image."
+                },
+                "upload_url": {
+                    "type": "string",
+                    "description": "Signed URL that must be used to upload the image."
+                }
+            },
+            "type": "object"
+        },
+        "SubmitValidationDeleteRequest": {
+            "properties": {
+                "task_id": {
+                    "type": "string",
+                    "description": "ID of the validation task that should be deleted(marked as done)."
+                }
+            },
+            "type": "object"
+        },
+        "SubmitValidationGetResponse": {
+            "required": [
+                "task_data",
+                "task_id"
+            ],
+            "properties": {
+                "task_id": {
+                    "type": "string",
+                    "description": "ID to later reference this validation task."
+                },
+                "task_data": {
+                    "$ref": "#/definitions/ValidationTask"
+                }
+            },
+            "type": "object"
+        },
+        "ValidationTask": {
+            "required": [
+                "images"
+            ],
+            "properties": {
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Signed URL that can be used to download the image"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Suggestion for the product name."
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Suggestion for the product color."
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Suggestion for the product category."
+                },
+                "shape": {
+                    "type": "string",
+                    "description": "Suggestion for the product outline as a polygon in WKT representation."
+                },
+                "label_text": {
+                    "type": "string",
+                    "description": "Suggestion for the product label text."
+                }
+            },
+            "type": "object"
+        }
+    },
+    "responses": {
+        "ParseError": {
+            "description": "When a mask can't be parsed"
+        },
+        "MaskError": {
+            "description": "When any error occurs on mask"
+        },
+        "Exception": {}
+    }
+}

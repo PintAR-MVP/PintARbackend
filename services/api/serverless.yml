@@ -1,0 +1,398 @@
+# org: pintar
+app: backend
+service: api
+
+package:
+  exclude:
+    - "node_modules/**"
+    - "**/__pycache__*"
+    
+plugins:
+  - serverless-python-requirements
+  - serverless-wsgi
+
+functions:
+  api:
+    handler: wsgi_handler.handler
+    role: ApiRole
+    name: pintar-api-${self:provider.stage}
+    memorySize: 1024
+    timeout: 10
+    layers:
+      - !Ref PythonRequirementsLambdaLayer
+    events:
+      - httpApi:
+          path: /products
+          method: GET
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products/{proxy+}
+          method: GET
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products
+          method: PUT
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products/{proxy+}
+          method: PUT
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products
+          method: POST
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products/{proxy+}
+          method: POST
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products
+          method: DELETE
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /products/{proxy+}
+          method: DELETE
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit
+          method: GET
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit/{proxy+}
+          method: GET
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit
+          method: PUT
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit/{proxy+}
+          method: PUT
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit
+          method: POST
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit/{proxy+}
+          method: POST
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit
+          method: DELETE
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /submit/{proxy+}
+          method: DELETE
+          authorizer: cognitoAuthorizer
+      - httpApi:
+          path: /
+          method: ANY
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+  productsDynamoDBStream:
+    handler: src/products_dynamodb_stream.handler
+    role: ProductsDynamoDBStreamRole
+    name: pintar-api-products-dynamodb-stream-${self:provider.stage}
+    memorySize: 512
+    timeout: 10 
+    layers:
+      - !Ref PythonRequirementsLambdaLayer
+    events:
+      - stream:
+          type: dynamodb
+          startingPosition: LATEST
+          enabled: true
+          batchSize: 1
+          maximumRetryAttempts: 0
+          parallelizationFactor: 10
+          arn : !GetAtt [ProductsDynamoDBTable, StreamArn]
+          destinations:
+            onFailure:
+              type: sqs
+              arn : !GetAtt [ProductsDynamoDBStreamDLQ, Arn]
+
+custom:
+  wsgi:
+    app: src/app.app
+  pythonRequirements:
+    layer:
+      name: pintar-api-${self:provider.stage}
+    dockerizePip: non-linux
+    dockerImage: lambci/lambda:build-python3.8
+    useDownloadCache: false
+    useStaticCache: false
+    slim: false
+
+  domainNames:
+    prod: api.pint-ar.de
+  certificateArns: 
+    prod: arn:aws:acm:eu-central-1:235501516910:certificate/67ec2276-cc0c-427b-9e17-7e37f1595233
+  
+  domainName: "${self:custom.domainNames.${self:provider.stage}}"
+  certificateArn: "${self:custom.certificateArns.${self:provider.stage}}"
+  hostedZoneId: Z06771035RYK5PGM23RO
+
+  productsBucketName: pintar-api-products-${self:provider.stage}
+  imageUploadBucketName: pintar-api-image-upload-${self:provider.stage}
+  productsTableName: pintar-api-products-${self:provider.stage}
+
+provider:
+  name: aws
+  region: eu-central-1
+  stage: ${opt:stage}
+  runtime: python3.8
+  stackName: pintar-api-${self:provider.stage}
+  environment:
+    REGION: ${self:provider.region}
+    PRODUCTS_TABLE_NAME: ${self:custom.productsTableName}
+    PRODUCTS_BUCKET_NAME: ${self:custom.productsBucketName}
+    IMAGE_UPLOAD_BUCKET_NAME: ${self:custom.imageUploadBucketName}
+    PRODUCTS_UPLOAD_QUEUE_URL: !Ref ProductsUploadQueue
+    OPENSEARCH_ENDPOINT: !GetAtt [ OpensearchDomain, DomainEndpoint ]
+  httpApi:
+    authorizers:
+      cognitoAuthorizer:
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Join:
+            - ""
+            - - "https://cognito-idp."
+              - "${self:provider.region}"
+              - ".amazonaws.com/"
+              - !Ref CognitoUserPool
+        audience:
+          - !Ref CognitoUserPoolClient
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: pintar-api-user-pool-${self:provider.stage}
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: true
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: pintar-api-user-pool-${self:provider.stage}-client
+        AllowedOAuthFlows:
+          - implicit
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthScopes:
+          - phone
+          - email
+          - openid
+          - profile
+          - aws.cognito.signin.user.admin
+        UserPoolId:
+          Ref: CognitoUserPool
+        CallbackURLs:
+          - https://localhost:5000
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        GenerateSecret: false
+        SupportedIdentityProviders:
+          - COGNITO
+    CognitoUserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      Properties:
+        UserPoolId:
+          Ref: CognitoUserPool
+        Domain: pintar-api-user-pool-${self:provider.stage}-domain
+    ApiRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: pintar-api-api-role-${self:provider.stage}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          - PolicyName: pintar-api-api-policy-${self:provider.stage}
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:Query"
+                    - "dynamodb:BatchWriteItem"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:DeleteItem"
+                    - "dynamodb:PutItem"
+                    - "dynamodb:Scan"
+                    - "dynamodb:UpdateItem"
+                  Resource:
+                    - !GetAtt [ProductsDynamoDBTable, Arn]
+                    - !Join [ "", [ !GetAtt [ProductsDynamoDBTable, Arn], "/*" ]]
+                - Effect: Allow
+                  Action:
+                    - "s3:GetObject"
+                    - "s3:PutObject"
+                    - "s3:DeleteObject"
+                  Resource:
+                    - !Join [ "", [ !GetAtt [ProductsBucket, Arn], "/*" ]]
+                    - !Join [ "", [ !GetAtt [ImageUploadBucket, Arn], "/*" ]]
+                - Effect: Allow
+                  Action:
+                    - "sqs:DeleteMessage"
+                    - "sqs:SendMessage"
+                    - "sqs:ReceiveMessage"
+                  Resource:
+                    - !GetAtt [ProductsUploadQueue, Arn]
+                - Effect: Allow
+                  Action:
+                    - "es:ESHttpGet"
+                    - "es:ESHttpHead"
+                    - "es:ESHttpPost"
+                  Resource:
+                    - !GetAtt [OpensearchDomain, Arn]
+                    - !Join [ "", [ !GetAtt [OpensearchDomain, Arn], "/*" ]]
+    ProductsDynamoDBStreamRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: pintar-api-products-dynamodb-stream-role-${self:provider.stage}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          - PolicyName: pintar-api-products-dynamodb-stream-policy-${self:provider.stage}
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:DescribeStream"
+                    - "dynamodb:GetRecords"
+                    - "dynamodb:GetShardIterator"
+                    - "dynamodb:ListStreams"
+                  Resource:
+                    - !Join [ "", [!GetAtt [ProductsDynamoDBTable, Arn], "/stream/*"]]
+                - Effect: Allow
+                  Action:
+                    - "es:ESHttpDelete"
+                    - "es:ESHttpGet"
+                    - "es:ESHttpHead"
+                    - "es:ESHttpPatch"
+                    - "es:ESHttpPost"
+                    - "es:ESHttpPut"
+                  Resource:
+                    - !GetAtt [OpensearchDomain, Arn]
+                    - !Join [ "", [ !GetAtt [OpensearchDomain, Arn], "/*" ]]
+                - Effect: Allow
+                  Action:
+                    - "sqs:SendMessage"
+                  Resource:
+                    - !GetAtt [ ProductsDynamoDBStreamDLQ, Arn ]
+    OpensearchDomain:
+      Type: AWS::OpenSearchService::Domain
+      Properties:
+        ClusterConfig:
+          DedicatedMasterEnabled: false
+          WarmEnabled: false
+          InstanceCount: 1
+          InstanceType: t3.small.search
+        DomainName: pintar-api-${self:provider.stage}
+        EBSOptions: 
+          EBSEnabled: true
+          VolumeSize: 10
+          VolumeType: gp2
+    ProductsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.productsTableName}
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+    ProductsDynamoDBStreamDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: pintar-api-products-dynamodb-stream-dlq-${self:provider.stage}
+    ProductsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.productsBucketName}
+    ImageUploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.imageUploadBucketName}
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteRule
+              Status: Enabled
+              ExpirationInDays: 14
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins: [ "*" ]
+              AllowedMethods: [ PUT, GET, HEAD ]
+              AllowedHeaders: [ "*" ]
+    ProductsUploadQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: pintar-api-products-upload-${self:provider.stage}.fifo
+        FifoQueue: true
+        ReceiveMessageWaitTimeSeconds: 0
+        VisibilityTimeout: 900
+    DomainName:
+      Type: AWS::ApiGatewayV2::DomainName
+      Properties:
+        DomainName: ${self:custom.domainName}
+        DomainNameConfigurations:
+          - CertificateArn: ${self:custom.certificateArn}
+    ApiMapping:
+      Type: AWS::ApiGatewayV2::ApiMapping
+      Properties:
+        ApiId: !Ref HttpApi
+        DomainName: ${self:custom.domainName}
+        Stage: !Ref HttpApiStage
+    RecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: ${self:custom.hostedZoneId}
+        Name: ${self:custom.domainName}
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt [DomainName, RegionalDomainName]
+          HostedZoneId: !GetAtt [DomainName, RegionalHostedZoneId]
+  Outputs:
+    DomainName:
+      Value: "https://${self:custom.domainName}"
+      Export:
+        Name: pintar-api-domain-name-${self:provider.stage}
+    CognitoUserPool:
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: pintar-api-cognito-user-pool-${self:provider.stage}
+    CognitoUserPoolClient:
+      Value: !Ref CognitoUserPoolClient
+      Export:
+        Name: pintar-api-cognito-user-pool-client-${self:provider.stage}
